@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ECharts</title>
+    <!-- 引入 ECharts 文件 -->
+    <script src="./echarts.min.js"></script>
+  </head>
+  <body>
+    <!-- 输入框和按钮 -->
+    <label for="currentValue">当前市值:</label>
+    <input type="number" id="currentValue" value="9723.29" /><br />
+    <label for="holdingYield">当前持有收益率:</label>
+    <input type="number" id="holdingYield" value="-0.1619" /><br />
+    <label for="step">补仓步长:</label>
+    <input type="number" id="step" value="20" /><br />
+    <label for="maxY">最大补仓金额:</label>
+    <input type="number" id="maxY" value="10000" /><br />
+    <button onclick="calculateAndDisplay()">确定</button>
+
+    <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
+    <div id="main" style="width: 1600px; height: 800px"></div>
+
+    <script type="text/javascript">
+      function calculateAndDisplay() {
+        const x = +document.getElementById('currentValue').value
+        const z = +document.getElementById('holdingYield').value
+        const step = +document.getElementById('step').value
+        const maxY = +document.getElementById('maxY').value
+
+        const results = []
+        const xAxis = []
+        const data = []
+        console.log('calculateAndDisplay', x, z, step, maxY)
+        // 遍历补仓金额，计算每次补仓后的收益率
+        for (let y = 0; y <= maxY; y += step) {
+          const newHoldingYield = calculateNewHoldingYield(x, y, z)
+          results.push({ y, newHoldingYield })
+          xAxis.push(y)
+          data.push(newHoldingYield)
+        }
+
+        // 计算每次补仓后的收益率变化率和边际效益
+        let maxMarginalBenefit = 0
+        let optimalY = 0
+
+        for (let i = 1; i < results.length; i++) {
+          const currentYield = results[i].newHoldingYield
+          const previousYield = results[i - 1].newHoldingYield
+          const changeRate = currentYield - previousYield
+
+          // 计算边际效益（单位补仓金额带来的收益率提升）
+          const marginalBenefit = changeRate / step
+
+          if (marginalBenefit > maxMarginalBenefit) {
+            maxMarginalBenefit = marginalBenefit
+            optimalY = results[i].y
+          }
+        }
+
+        // 输出结果
+        console.log('补仓金额与新持有收益率的变化：')
+        results.forEach((result) => {
+          console.log(`补仓金额: ${result.y}, 新持有收益率: ${result.newHoldingYield.toFixed(4)}`)
+        })
+
+        console.log(`\n性价比最佳的补仓金额是：${optimalY}，此时边际效益最高，为 ${maxMarginalBenefit.toFixed(6)}`)
+
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'))
+
+        // 指定图表的配置项和数据
+        option = {
+          xAxis: {
+            type: 'category',
+            data: xAxis,
+          },
+          yAxis: {
+            type: 'value',
+          },
+          series: [
+            {
+              data,
+              type: 'line',
+              smooth: true,
+            },
+          ],
+        }
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option)
+      }
+
+      // 计算新持有收益率的函数
+      function calculateNewHoldingYield(x, y, z) {
+        return (x + y) / (x / (1 + z) + y) - 1
+      }
+    </script>
+  </body>
+</html>

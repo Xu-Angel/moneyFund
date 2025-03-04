@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>ECharts</title>
     <!-- 引入 ECharts 文件 -->
-    <script src="./echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
   </head>
   <body>
     <!-- 输入框和按钮 -->
@@ -23,15 +23,15 @@
 
     <script type="text/javascript">
       function calculateAndDisplay() {
-        const x = +document.getElementById('currentValue').value
-        const z = +document.getElementById('holdingYield').value
-        const step = +document.getElementById('step').value
-        const maxY = +document.getElementById('maxY').value
+        const x = parseFloat(document.getElementById('currentValue').value)
+        const z = parseFloat(document.getElementById('holdingYield').value)
+        const step = parseFloat(document.getElementById('step').value)
+        const maxY = parseFloat(document.getElementById('maxY').value)
 
         const results = []
         const xAxis = []
         const data = []
-        console.log('calculateAndDisplay', x, z, step, maxY)
+
         // 遍历补仓金额，计算每次补仓后的收益率
         for (let y = 0; y <= maxY; y += step) {
           const newHoldingYield = calculateNewHoldingYield(x, y, z)
@@ -71,6 +71,15 @@
 
         // 指定图表的配置项和数据
         option = {
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              label: {
+                backgroundColor: '#6a7985',
+              },
+            },
+          },
           xAxis: {
             type: 'category',
             data: xAxis,
